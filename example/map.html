@@ -1,0 +1,119 @@
+<script src="../tinytest.js"></script>
+<script>
+
+// Example 1: Callback should run 3 times
+// map([1,2,3], function() {});
+
+
+// Example 2: Callback has access to ith element
+// map([1,2,3], function(element) {
+// 	console.log(element);
+// })
+
+// Example 3: Callback has access to index 
+// map([1,2,3], function(element, index) {
+// 	console.log(index);
+// })
+
+// Example 4: Callback has access to original array
+// map([1,2,3], function(number, index, array) {
+// console.log(array);
+// });
+
+//Example 5: Optional this
+// map([1,2,3], function() {
+// 	console.log(this.name)
+// }, {name: 'Gordon'});
+
+// Example 6: Make sure new array doesnt match original array
+// var originalArray = [1,2,3];
+// var filteredArray = map(originalArray, function() {}, {name: 'Gordon'});
+// originalArray !== filteredArray
+
+// Example 7: 
+// var originalArray = [1,2,3];
+// var mappedArray = map(originalArray, function(element) {
+// 	return element * 2;
+// });
+// Expect mappedArray to be [2, 4, 6];
+
+
+function map(array, callback, optionalThisObject) {
+	var mapCallback = callback; 
+	if(optionalThisObject) {
+	mapCallback = callback.bind(optionalThisObject);
+	}
+	var mappedArray = [];
+	for(i = 0; i <array.length; i++) {
+		if(i in array) {
+			mappedArray[i] = mapCallback(array[i], i, array);
+			}
+		}
+		return mappedArray; 
+}
+
+
+tests({
+  'Callback should run 3 times': function() {
+  	var mappedIterations = 0;
+  	map([1, 2, 3], function() {
+		mappedIterations++
+  	})
+  	eq(mappedIterations, 3)
+  },
+
+  'Callback has access to ith element': function() {
+	map([3], function(number){
+		eq(number, 3)
+	})
+  },
+
+  'Callback has access to index': function() {
+	map([3], function(number, position) {
+		eq(position, 0)
+	})
+  },	
+
+  'Callback has access to original array': function() {
+	originalArray = [1,2,3];
+	map(originalArray, function(number, position, array) {
+		eq(originalArray, array)
+	})
+  },
+
+  'It should accept an optional this object': function() {
+  	map([1, 2, 3], function(number, position, array) {
+		eq(this.description, 'This is the optionalThisObject')
+  	}, {description: 'This is the optionalThisObject'});
+  },
+
+  'It should return an array': function() {
+	var mappedArray = map([], function(number, position, array) {});
+	eq(Array.isArray(mappedArray), true);
+  },
+
+  'It should provide a new array': function() {
+	var originalArray = [];
+	var mappedArray = map(originalArray, function() {});
+	eq(mappedArray !== originalArray, true);
+  },
+
+  'Should return a mapped array': function() {
+	var mappedArray = map([1, 2, 3, 4], function(number) {
+		return number * 4;
+	});
+	// [4]
+	eq(mappedArray[0], 4);
+  },
+  'It should skip unassigned indexes': function()  {
+  	var weirdArray = [, 1];
+  	var mappedArray = map(weirdArray, function double(number) {
+  		return number * 2;
+  	});
+  	// (0 in mappedArray) === false
+  	eq(0 in mappedArray, false)
+  	// mappedArray[1] === 2
+  	eq(mappedArray[1], 2)
+  } 
+});
+// </script>
